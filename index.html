@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteador de Nome e Cor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .result-box {
+            min-height: 150px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.5s;
+            padding: 20px;
+            border: 2px solid #ddd;
+        }
+
+        .result-text {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            margin: 5px 0;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .button:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+
+        .button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .error-text {
+            color: red;
+            text-shadow: none;
+        }
+
+        .reload-text {
+            margin-top: 10px;
+            color: #666;
+            font-size: 0.9em;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1 class="title">Sorteador da festa das cores</h1>
+        <div class="result-box" id="resultBox">
+            <p class="result-text">Clique no botão para sortear</p>
+        </div>
+        <button class="button" id="sortearButton" onclick="sortear()">Sortear Nome e Cor</button>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:5000/random-data';
+
+        async function sortear() {
+            const resultBox = document.getElementById('resultBox');
+            const sortearButton = document.getElementById('sortearButton');
+            const reloadText = document.getElementById('reloadText');
+            
+            // Desabilita o botão permanentemente
+            sortearButton.disabled = true;
+            // Mostra a mensagem de recarregar
+            reloadText.style.display = 'block';
+
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+
+                if (response.status === 404) {
+                    resultBox.style.backgroundColor = '#f8f8f8';
+                    resultBox.innerHTML = `
+                        <p class="result-text error-text">${data.error}</p>
+                    `;
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro ao buscar dados da API');
+                }
+
+                resultBox.style.backgroundColor = '#f8f8f8';
+                resultBox.innerHTML = `
+                    <p class="result-text" style="color: ${data.cor}">Nome: ${data.nome}</p>
+                    <p class="result-text" style="color: ${data.cor}">Cor: ${data.cor}</p>
+                `;
+
+            } catch (error) {
+                console.error('Erro:', error);
+                resultBox.style.backgroundColor = '#f8f8f8';
+                resultBox.innerHTML = `
+                    <p class="result-text error-text">Erro ao sortear. Recarregue a página e tente novamente.</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
